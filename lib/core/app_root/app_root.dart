@@ -4,6 +4,7 @@ import '../../features/auth/presentation/screens/login_screen.dart';
 import '../../features/auth/presentation/screens/setup_wizard_screen.dart';
 import '../app_shell/app_shell.dart';
 import '../services/session_service.dart';
+import '../widgets/splash_screen.dart';
 import 'app_root_controller.dart';
 
 /// First widget shown after startup. Decides between Setup Wizard, Login,
@@ -22,7 +23,7 @@ class AppRoot extends StatelessWidget {
 
       switch (controller.state.value) {
         case ColdStartState.loading:
-          return const Scaffold(body: Center(child: CircularProgressIndicator()));
+          return const SplashScreen();
         case ColdStartState.needsSetup:
           return const SetupWizardScreen();
         case ColdStartState.needsLogin:

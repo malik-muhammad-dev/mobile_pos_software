@@ -19,18 +19,23 @@ void main() {
     await tester.pump();
   }
 
+  late Database db;
   late SetupWizardController controller;
 
   setUp(() async {
-    final db = await AppDatabase.openInMemoryForTest();
+    db = await AppDatabase.openInMemoryForTest();
     Get.put(SqliteAuthService(databaseProvider: () async => db), permanent: true);
     Get.put(SqliteShopConfigService(databaseProvider: () async => db), permanent: true);
     Get.put(SessionService(), permanent: true);
     controller = SetupWizardController();
   });
 
-  tearDown(() {
+  // Each in-memory database goes through sqflite_common_ffi's shared native
+  // worker — leaving them open across the whole test run lets connections
+  // pile up and can stall later tests, so always close what was opened.
+  tearDown(() async {
     Get.reset();
+    await db.close();
   });
 
   testWidgets('submitDetails does not advance when a name is missing', (tester) async {
@@ -78,14 +83,19 @@ void main() {
     controller.pinController.text = '1234';
     controller.step.value = SetupStep.confirmPin;
 
-    await controller.onConfirmEntered('1234');
+    ShopConfig? config;
+    // sqflite_common_ffi does its real work on a native worker, off the
+    // fake clock testWidgets normally runs on — runAsync hands this block
+    // the real event loop so those awaits actually resolve.
+    await tester.runAsync(() async {
+      await controller.onConfirmEntered('1234');
+      config = await Get.find<SqliteShopConfigService>().getConfig();
+    });
 
     final session = Get.find<SessionService>();
     expect(session.isLoggedIn, isTrue);
     expect(session.currentStaff.value?.name, 'Ahmed');
     expect(session.currentStaff.value?.role, StaffRole.owner);
-
-    final config = await Get.find<SqliteShopConfigService>().getConfig();
     expect(config?.shopName, 'Al-Karam Mobiles');
   });
 }

@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_spacing.dart';
-import 'auth_scaffold.dart';
+import '../../../../core/theme/app_typography.dart';
 import 'pin_dots_input.dart';
 
-/// One "type a PIN" step — reused by both the Setup Wizard (create PIN,
-/// confirm PIN) and Login (enter PIN). Only the copy and callbacks differ.
+/// One "type a PIN" step — reused by Setup Wizard (create/confirm PIN) and
+/// Login (enter PIN). `leading` is whatever sits above the title: step
+/// dots for Setup Wizard, a big personalized avatar for Login.
 class PinEntryStep extends StatelessWidget {
   const PinEntryStep({
     super.key,
@@ -14,6 +15,7 @@ class PinEntryStep extends StatelessWidget {
     required this.onCompleted,
     this.onBack,
     this.backLabel = 'Back',
+    this.leading,
   });
 
   final String title;
@@ -22,22 +24,24 @@ class PinEntryStep extends StatelessWidget {
   final ValueChanged<String> onCompleted;
   final VoidCallback? onBack;
   final String backLabel;
+  final Widget? leading;
 
   @override
   Widget build(BuildContext context) {
-    return AuthScaffold(
-      title: title,
-      subtitle: subtitle,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          PinDotsInput(controller: pinController, onCompleted: onCompleted),
-          if (onBack != null) ...[
-            const SizedBox(height: AppSpacing.lg),
-            TextButton(onPressed: onBack, child: Text(backLabel)),
-          ],
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        if (leading != null) ...[leading!, const SizedBox(height: AppSpacing.lg)],
+        Text(title, style: AppTypography.headlineLg, textAlign: TextAlign.center),
+        const SizedBox(height: AppSpacing.xs),
+        Text(subtitle, style: AppTypography.bodyMd, textAlign: TextAlign.center),
+        const SizedBox(height: AppSpacing.xl),
+        PinDotsInput(controller: pinController, onCompleted: onCompleted),
+        if (onBack != null) ...[
+          const SizedBox(height: AppSpacing.lg),
+          TextButton(onPressed: onBack, child: Text(backLabel)),
         ],
-      ),
+      ],
     );
   }
 }

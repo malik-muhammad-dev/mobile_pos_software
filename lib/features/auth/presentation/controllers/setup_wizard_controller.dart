@@ -16,6 +16,10 @@ class SetupWizardController extends GetxController {
   final step = SetupStep.details.obs;
   final isSubmitting = false.obs;
 
+  /// Mirrors shopNameController live so the brand panel can show the shop
+  /// name as it's typed, before it's actually saved.
+  final liveShopName = ''.obs;
+
   final shopNameController = TextEditingController();
   final ownerNameController = TextEditingController();
   final pinController = TextEditingController();

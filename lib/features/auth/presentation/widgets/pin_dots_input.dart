@@ -33,6 +33,20 @@ class _PinDotsInputState extends State<PinDotsInput> {
     widget.controller.addListener(_handleChange);
   }
 
+  @override
+  void didUpdateWidget(covariant PinDotsInput oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Setup Wizard reuses this same widget slot for create-PIN then
+    // confirm-PIN, just swapping the controller — initState() won't run
+    // again for that, so the listener has to move over by hand or it
+    // keeps watching the old (now-hidden) field forever.
+    if (oldWidget.controller != widget.controller) {
+      oldWidget.controller.removeListener(_handleChange);
+      widget.controller.addListener(_handleChange);
+      _lastLength = widget.controller.text.length;
+    }
+  }
+
   void _handleChange() {
     final currentLength = widget.controller.text.length;
     if (currentLength == widget.length && _lastLength != widget.length) {

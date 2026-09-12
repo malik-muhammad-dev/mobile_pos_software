@@ -5,6 +5,7 @@ import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../../core/widgets/app_card.dart';
 import '../../../../core/widgets/empty_state.dart';
+import 'initial_avatar.dart';
 
 /// "Who's logging in?" — tap your name, then type your PIN. Simpler and
 /// safer than guessing whose PIN was typed from the PIN alone.
@@ -37,17 +38,13 @@ class _StaffRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final initial = staff.name.isNotEmpty ? staff.name[0].toUpperCase() : '?';
     return Padding(
       padding: const EdgeInsets.only(bottom: AppSpacing.sm),
       child: AppCard(
         onTap: onTap,
         child: Row(
           children: [
-            CircleAvatar(
-              backgroundColor: AppColors.primary.withValues(alpha: 0.1),
-              child: Text(initial, style: AppTypography.headlineSm.copyWith(color: AppColors.primary)),
-            ),
+            InitialAvatar(name: staff.name, size: 40),
             const SizedBox(width: AppSpacing.md),
             Expanded(
               child: Column(

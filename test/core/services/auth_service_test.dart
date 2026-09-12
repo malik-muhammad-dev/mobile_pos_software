@@ -10,11 +10,20 @@ void main() {
     sqfliteFfiInit();
   });
 
+  late Database db;
   late SqliteAuthService authService;
 
   setUp(() async {
-    final db = await AppDatabase.openInMemoryForTest();
+    db = await AppDatabase.openInMemoryForTest();
     authService = SqliteAuthService(databaseProvider: () async => db);
+  });
+
+  // Every test opens its own in-memory database via sqflite_common_ffi,
+  // which is backed by a single shared native worker. Leaving these open
+  // across a whole test run lets connections pile up and can stall later
+  // tests — always close what you opened.
+  tearDown(() async {
+    await db.close();
   });
 
   test('hasAnyStaff is false before setup, true after', () async {
