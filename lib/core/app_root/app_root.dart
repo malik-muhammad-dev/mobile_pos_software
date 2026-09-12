@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../../features/auth/presentation/screens/login_screen.dart';
+import '../../features/auth/presentation/screens/setup_wizard_screen.dart';
 import '../app_shell/app_shell.dart';
 import '../services/session_service.dart';
-import '../widgets/coming_soon_screen.dart';
 import 'app_root_controller.dart';
 
 /// First widget shown after startup. Decides between Setup Wizard, Login,
-/// or the AppShell — the actual Setup/Login screen content comes later
-/// (placeholders for now, per "core only" scope for this pass).
+/// or the AppShell based on whether any staff exist yet and who — if
+/// anyone — is currently logged in at this terminal.
 class AppRoot extends StatelessWidget {
   const AppRoot({super.key});
 
@@ -23,9 +24,9 @@ class AppRoot extends StatelessWidget {
         case ColdStartState.loading:
           return const Scaffold(body: Center(child: CircularProgressIndicator()));
         case ColdStartState.needsSetup:
-          return const Scaffold(body: ComingSoonScreen(title: 'Setup Wizard'));
+          return const SetupWizardScreen();
         case ColdStartState.needsLogin:
-          return const Scaffold(body: ComingSoonScreen(title: 'Login'));
+          return const LoginScreen();
       }
     });
   }

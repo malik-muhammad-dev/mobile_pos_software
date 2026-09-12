@@ -40,3 +40,7 @@ class AccountDeactivatedException extends AppException {
 class InvalidImeiException extends AppException {
   const InvalidImeiException() : super('Please scan or type a valid 15-digit IMEI.');
 }
+
+class PinMismatchException extends AppException {
+  const PinMismatchException() : super("Those PINs don't match — let's try again.");
+}

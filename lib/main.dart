@@ -5,6 +5,7 @@ import 'core/app_root/app_root.dart';
 import 'core/services/core_services_binding.dart';
 import 'core/theme/app_theme.dart';
 import 'core/widgets/crash_fallback_screen.dart';
+import 'features/auth/presentation/bindings/auth_binding.dart';
 
 void main() {
   sqfliteFfiInit();
@@ -25,7 +26,10 @@ class MobileShopPosApp extends StatelessWidget {
       title: 'Mobile Shop POS',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light,
-      initialBinding: CoreServicesBinding(),
+      initialBinding: BindingsBuilder(() {
+        CoreServicesBinding().dependencies();
+        AuthBinding().dependencies();
+      }),
       home: const AppRoot(),
     );
   }
