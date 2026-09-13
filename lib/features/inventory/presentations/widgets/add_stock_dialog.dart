@@ -369,7 +369,7 @@ class _AddStockDialogState extends State<AddStockDialog> {
     required ValueChanged<String?> onChanged,
   }) {
     return DropdownButtonFormField<String>(
-      value: value,
+      initialValue: value,
       decoration: InputDecoration(labelText: label),
       items: [for (final item in items) DropdownMenuItem(value: item, child: Text(item))],
       onChanged: onChanged,
@@ -378,7 +378,7 @@ class _AddStockDialogState extends State<AddStockDialog> {
 
   Widget _complianceDropdown() {
     return DropdownButtonFormField<ComplianceStatus>(
-      value: _compliance,
+      initialValue: _compliance,
       decoration: const InputDecoration(labelText: 'Compliance'),
       items: [
         for (final status in ComplianceStatus.values)

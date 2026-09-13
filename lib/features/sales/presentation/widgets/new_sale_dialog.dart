@@ -168,7 +168,7 @@ class _NewSaleDialogState extends State<NewSaleDialog> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('New Sale', style: AppTypography.headlineMd),
+              const Text('New Sale', style: AppTypography.headlineMd),
               const SizedBox(height: AppSpacing.xs),
               const Text(
                 'Pick what was sold, or use Custom Item for anything not in Inventory.',

@@ -41,7 +41,7 @@ class RecentSalesList extends StatelessWidget {
             Text(sale.itemDescription, style: AppTypography.bodyMd, overflow: TextOverflow.ellipsis),
             _AmountCell(sale: sale),
             sale.isUdhar
-                ? StatusBadge(
+                ? const StatusBadge(
                     label: 'Udhar',
                     ink: AppColors.pending,
                     bg: AppColors.warningBg,
