@@ -61,47 +61,49 @@ class _NavRail extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: 240,
+    return Material(
       color: AppColors.surfaceCard,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(AppSpacing.gutter),
-            child: Text(staffName, style: AppTypography.headlineSm, overflow: TextOverflow.ellipsis),
-          ),
-          const Divider(height: 1, color: AppColors.borderDefault),
-          Expanded(
-            child: ListView.builder(
-              padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
-              itemCount: items.length,
-              itemBuilder: (context, index) {
-                final item = items[index];
-                final isSelected = index == selectedIndex;
-                return ListTile(
-                  leading: Icon(item.icon, color: isSelected ? AppColors.primary : AppColors.textSecondary),
-                  title: Text(
-                    item.label,
-                    style: AppTypography.bodyLg.copyWith(
-                      color: isSelected ? AppColors.primary : AppColors.textPrimary,
-                      fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                    ),
-                  ),
-                  selected: isSelected,
-                  selectedTileColor: AppColors.primary.withValues(alpha: 0.06),
-                  onTap: () => onSelect(index),
-                );
-              },
+      child: SizedBox(
+        width: 240,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(AppSpacing.gutter),
+              child: Text(staffName, style: AppTypography.headlineSm, overflow: TextOverflow.ellipsis),
             ),
-          ),
-          const Divider(height: 1, color: AppColors.borderDefault),
-          ListTile(
-            leading: const Icon(Icons.logout, color: AppColors.textSecondary),
-            title: const Text('Log Out', style: AppTypography.bodyLg),
-            onTap: onLogOut,
-          ),
-        ],
+            const Divider(height: 1, color: AppColors.borderDefault),
+            Expanded(
+              child: ListView.builder(
+                padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
+                itemCount: items.length,
+                itemBuilder: (context, index) {
+                  final item = items[index];
+                  final isSelected = index == selectedIndex;
+                  return ListTile(
+                    leading: Icon(item.icon, color: isSelected ? AppColors.primary : AppColors.textSecondary),
+                    title: Text(
+                      item.label,
+                      style: AppTypography.bodyLg.copyWith(
+                        color: isSelected ? AppColors.primary : AppColors.textPrimary,
+                        fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                      ),
+                    ),
+                    selected: isSelected,
+                    selectedTileColor: AppColors.primary.withValues(alpha: 0.06),
+                    onTap: () => onSelect(index),
+                  );
+                },
+              ),
+            ),
+            const Divider(height: 1, color: AppColors.borderDefault),
+            ListTile(
+              leading: const Icon(Icons.logout, color: AppColors.textSecondary),
+              title: const Text('Log Out', style: AppTypography.bodyLg),
+              onTap: onLogOut,
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -18,6 +18,21 @@ void main() {
     await tester.pump();
   }
 
+  // Rather than guessing a fixed delay (which races the real database
+  // check — the very thing that caused earlier hangs), poll inside the
+  // same runAsync block until the controller actually resolves, however
+  // long that genuinely takes.
+  Future<AppRootController> putAndAwaitResolved(WidgetTester tester) async {
+    late AppRootController controller;
+    await tester.runAsync(() async {
+      controller = Get.put(AppRootController());
+      while (controller.state.value == ColdStartState.loading) {
+        await Future<void>.delayed(const Duration(milliseconds: 50));
+      }
+    });
+    return controller;
+  }
+
   late Database db;
 
   tearDown(() async {
@@ -31,11 +46,7 @@ void main() {
     Get.put(SqliteAuthService(databaseProvider: () async => db), permanent: true);
     Get.put(SessionService(), permanent: true);
 
-    late AppRootController controller;
-    await tester.runAsync(() async {
-      controller = Get.put(AppRootController());
-      await Future<void>.delayed(const Duration(milliseconds: 700));
-    });
+    final controller = await putAndAwaitResolved(tester);
 
     expect(controller.state.value, ColdStartState.needsSetup);
   });
@@ -48,11 +59,7 @@ void main() {
     Get.put(authService, permanent: true);
     Get.put(SessionService(), permanent: true);
 
-    late AppRootController controller;
-    await tester.runAsync(() async {
-      controller = Get.put(AppRootController());
-      await Future<void>.delayed(const Duration(milliseconds: 700));
-    });
+    final controller = await putAndAwaitResolved(tester);
 
     expect(controller.state.value, ColdStartState.needsLogin);
   });
@@ -64,11 +71,7 @@ void main() {
     final session = Get.put(SessionService(), permanent: true);
 
     // A brand new install starts out needing setup...
-    late AppRootController controller;
-    await tester.runAsync(() async {
-      controller = Get.put(AppRootController());
-      await Future<void>.delayed(const Duration(milliseconds: 700));
-    });
+    final controller = await putAndAwaitResolved(tester);
     expect(controller.state.value, ColdStartState.needsSetup);
 
     // ...Setup Wizard finishes and logs the new owner in...
