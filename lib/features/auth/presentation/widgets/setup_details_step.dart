@@ -22,7 +22,7 @@ class SetupDetailsStep extends StatelessWidget {
       children: [
         const SetupStepDots(total: 3, current: 0),
         const SizedBox(height: AppSpacing.lg),
-        Text("Let's set up your shop", style: AppTypography.headlineLg),
+        const Text("Let's set up your shop", style: AppTypography.headlineLg),
         const SizedBox(height: AppSpacing.xl),
         AppTextField(
           controller: controller.shopNameController,

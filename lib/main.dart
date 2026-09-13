@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:mobile_shop_pos/features/inventory/presentations/bindings/inventory_binding.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'core/app_root/app_root.dart';
 import 'core/services/core_services_binding.dart';
 import 'core/theme/app_theme.dart';
 import 'core/widgets/crash_fallback_screen.dart';
 import 'features/auth/presentation/bindings/auth_binding.dart';
+import 'features/sales/presentation/bindings/sales_binding.dart';
 
 void main() {
   sqfliteFfiInit();
@@ -29,6 +31,8 @@ class MobileShopPosApp extends StatelessWidget {
       initialBinding: BindingsBuilder(() {
         CoreServicesBinding().dependencies();
         AuthBinding().dependencies();
+        SalesBinding().dependencies();
+        InventoryBinding().dependencies();
       }),
       home: const AppRoot(),
     );

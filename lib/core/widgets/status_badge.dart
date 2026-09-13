@@ -122,7 +122,18 @@ class StatusBadge extends StatelessWidget {
         children: [
           Icon(icon, size: 14, color: ink),
           const SizedBox(width: 6),
-          Text(label.toUpperCase(), style: AppTypography.labelSm.copyWith(color: ink)),
+          // Flexible + ellipsis: a badge sitting in a narrow table column
+          // (e.g. Compliance, whose longest label is "FACTORY UNLOCKED")
+          // must be able to shrink instead of overflowing the Row by a
+          // few pixels when its parent gives it a tight width.
+          Flexible(
+            child: Text(
+              label.toUpperCase(),
+              style: AppTypography.labelSm.copyWith(color: ink),
+              overflow: TextOverflow.ellipsis,
+              maxLines: 1,
+            ),
+          ),
         ],
       ),
     );

@@ -19,7 +19,7 @@ class LoginStaffStep extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Text('Who is logging in?', style: AppTypography.headlineLg),
+        const Text('Who is logging in?', style: AppTypography.headlineLg),
         const SizedBox(height: AppSpacing.xl),
         StaffPicker(staff: staff, onSelect: onSelect),
       ],

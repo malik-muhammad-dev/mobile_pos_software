@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:mobile_shop_pos/features/inventory/presentations/screens/inventory_screen.dart';
 import '../services/session_service.dart';
 import '../services/staff_model.dart';
 import '../widgets/coming_soon_screen.dart';
+import '../../features/sales/presentation/screens/sales_screen.dart';
 import 'nav_item.dart';
 
 /// Defines the 5-module nav (Sales, Inventory, Customers & Ledger, Reports,
@@ -18,14 +20,14 @@ class AppShellController extends GetxController {
       label: 'Sales',
       icon: Icons.point_of_sale_outlined,
       roles: {StaffRole.owner, StaffRole.cashier},
-      builder: (_) => const ComingSoonScreen(title: 'Sales'),
+      builder: (_) => const SalesScreen(),
     ),
     NavItem(
       id: 'inventory',
       label: 'Inventory',
       icon: Icons.inventory_2_outlined,
       roles: {StaffRole.owner},
-      builder: (_) => const ComingSoonScreen(title: 'Inventory'),
+      builder: (_) => const InventoryScreen(),
     ),
     NavItem(
       id: 'stock_lookup',
