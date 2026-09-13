@@ -29,7 +29,7 @@ class AndroidProductsTable extends StatelessWidget {
         AppDataColumn('Variant', flex: 3, minWidth: 150),
         AppDataColumn('Condition', flex: 2, minWidth: 90),
         AppDataColumn('Quantity', flex: 2, minWidth: 110),
-        AppDataColumn('Price', flex: 2, minWidth: 100),
+        AppDataColumn('Price', flex: 2, minWidth: 120),
       ],
       rows: [
         for (final product in products)
@@ -38,7 +38,7 @@ class AndroidProductsTable extends StatelessWidget {
             Text('${product.storage} • ${product.ram} • ${product.color}', style: AppTypography.bodySm),
             Text(product.condition, style: AppTypography.bodyMd),
             _QuantityCell(quantity: product.quantity, isLow: isLowStock(product)),
-            CurrencyText(product.price),
+            _PriceCell(product: product),
           ],
       ],
     );
@@ -68,6 +68,33 @@ class _QuantityCell extends StatelessWidget {
             overflow: TextOverflow.ellipsis,
             maxLines: 1,
           ),
+        ),
+      ],
+    );
+  }
+}
+
+/// Sale price is the primary figure (what's charged to the customer); cost
+/// price shows underneath in muted text — same treatment as the iPhone
+/// table, so margin is visible at a glance on both tabs.
+class _PriceCell extends StatelessWidget {
+  const _PriceCell({required this.product});
+
+  final SampleAndroidProduct product;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        CurrencyText(product.salePrice, style: AppTypography.bodyLg.merge(AppTypography.numeric).copyWith(fontWeight: FontWeight.w700)),
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text('Cost ', style: AppTypography.bodySm.copyWith(color: AppColors.textMuted)),
+            CurrencyText(product.costPrice, style: AppTypography.bodySm.copyWith(color: AppColors.textMuted)),
+          ],
         ),
       ],
     );

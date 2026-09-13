@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -11,6 +13,10 @@ import 'inventory_tab_switcher.dart';
 
 const List<String> _iphoneConditions = ['New', 'Used — Excellent', 'Used — Good', 'Used — Fair'];
 const List<String> _androidConditions = ['New', 'Used'];
+
+/// Shown at the end of the iPhone model search results — picking it clears
+/// the field so the shop can type a model that isn't on the standard list.
+const String _customModelSentinel = 'Custom / Not Listed…';
 
 /// Quick "add stock" form — demo-grade for now: it only appends to the
 /// in-memory sample lists (via InventoryController), there's no real
@@ -34,7 +40,8 @@ class _AddStockDialogState extends State<AddStockDialog> {
   final _colorController = TextEditingController();
   final _imeiController = TextEditingController();
   final _batteryController = TextEditingController(text: '100');
-  final _priceController = TextEditingController();
+  final _costPriceController = TextEditingController();
+  final _salePriceController = TextEditingController();
   String _condition = _iphoneConditions.first;
   ComplianceStatus _compliance = ComplianceStatus.ptaApproved;
 
@@ -44,6 +51,7 @@ class _AddStockDialogState extends State<AddStockDialog> {
   final _quantityController = TextEditingController(text: '1');
 
   String? _error;
+  TextEditingController? _autocompleteModelController;
 
   @override
   void dispose() {
@@ -52,7 +60,8 @@ class _AddStockDialogState extends State<AddStockDialog> {
     _colorController.dispose();
     _imeiController.dispose();
     _batteryController.dispose();
-    _priceController.dispose();
+    _costPriceController.dispose();
+    _salePriceController.dispose();
     _brandController.dispose();
     _ramController.dispose();
     _quantityController.dispose();
@@ -60,13 +69,18 @@ class _AddStockDialogState extends State<AddStockDialog> {
   }
 
   void _submit() {
-    final price = int.tryParse(_priceController.text.trim());
+    final costPrice = int.tryParse(_costPriceController.text.trim());
+    final salePrice = int.tryParse(_salePriceController.text.trim());
     if (_modelController.text.trim().isEmpty) {
       setState(() => _error = 'Model is required');
       return;
     }
-    if (price == null || price <= 0) {
-      setState(() => _error = 'Enter a valid price');
+    if (costPrice == null || costPrice <= 0) {
+      setState(() => _error = 'Enter a valid cost price (what you paid for it)');
+      return;
+    }
+    if (salePrice == null || salePrice <= 0) {
+      setState(() => _error = "Enter a valid sale price (what you'll charge)");
       return;
     }
 
@@ -85,7 +99,8 @@ class _AddStockDialogState extends State<AddStockDialog> {
         imei: _imeiController.text.trim(),
         compliance: _compliance,
         batteryHealth: int.tryParse(_batteryController.text.trim()) ?? 100,
-        price: price,
+        costPrice: costPrice,
+        salePrice: salePrice,
       );
     } else {
       final quantity = int.tryParse(_quantityController.text.trim());
@@ -101,7 +116,8 @@ class _AddStockDialogState extends State<AddStockDialog> {
         color: _colorController.text.trim().isEmpty ? '—' : _colorController.text.trim(),
         condition: _condition,
         quantity: quantity,
-        price: price,
+        costPrice: costPrice,
+        salePrice: salePrice,
       );
     }
 
@@ -111,10 +127,15 @@ class _AddStockDialogState extends State<AddStockDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final screen = MediaQuery.of(context).size;
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.lg)),
+      insetPadding: const EdgeInsets.all(AppSpacing.gutterLg),
       child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 460, maxHeight: 640),
+        constraints: BoxConstraints(
+          maxWidth: math.min(460, screen.width * 0.92),
+          maxHeight: math.min(640, screen.height * 0.88),
+        ),
         child: Padding(
           padding: const EdgeInsets.all(AppSpacing.gutterLg),
           child: Column(
@@ -128,7 +149,16 @@ class _AddStockDialogState extends State<AddStockDialog> {
                 style: AppTypography.bodySm,
               ),
               const SizedBox(height: AppSpacing.lg),
-              InventoryTabSwitcher(selected: _tab, onChanged: (tab) => setState(() => _tab = tab)),
+              InventoryTabSwitcher(
+                selected: _tab,
+                onChanged: (tab) => setState(() {
+                  _tab = tab;
+                  // Condition options differ per tab (iPhone has 4, Android
+                  // has 2) — reset so the dropdown's value is never left
+                  // pointing at an option the other tab doesn't have.
+                  _condition = (tab == InventoryTab.iphone ? _iphoneConditions : _androidConditions).first;
+                }),
+              ),
               const SizedBox(height: AppSpacing.lg),
               Expanded(
                 child: SingleChildScrollView(
@@ -158,7 +188,7 @@ class _AddStockDialogState extends State<AddStockDialog> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        AppTextField(controller: _modelController, label: 'Model', hint: 'e.g. iPhone 13 Pro'),
+        _iphoneModelField(),
         const SizedBox(height: AppSpacing.md),
         Row(
           children: [
@@ -184,26 +214,13 @@ class _AddStockDialogState extends State<AddStockDialog> {
         const SizedBox(height: AppSpacing.md),
         _complianceDropdown(),
         const SizedBox(height: AppSpacing.md),
-        Row(
-          children: [
-            Expanded(
-              child: AppTextField(
-                controller: _batteryController,
-                label: 'Battery Health (%)',
-                keyboardType: TextInputType.number,
-              ),
-            ),
-            const SizedBox(width: AppSpacing.md),
-            Expanded(
-              child: AppTextField(
-                controller: _priceController,
-                label: 'Price (Rs.)',
-                hint: 'e.g. 185000',
-                keyboardType: TextInputType.number,
-              ),
-            ),
-          ],
+        AppTextField(
+          controller: _batteryController,
+          label: 'Battery Health (%)',
+          keyboardType: TextInputType.number,
         ),
+        const SizedBox(height: AppSpacing.md),
+        _priceFields(costHint: 'e.g. 162000', saleHint: 'e.g. 185000'),
       ],
     );
   }
@@ -243,23 +260,105 @@ class _AddStockDialogState extends State<AddStockDialog> {
           ],
         ),
         const SizedBox(height: AppSpacing.md),
-        Row(
-          children: [
-            Expanded(
-              child: AppTextField(controller: _quantityController, label: 'Quantity', keyboardType: TextInputType.number),
-            ),
-            const SizedBox(width: AppSpacing.md),
-            Expanded(
-              child: AppTextField(
-                controller: _priceController,
-                label: 'Price (Rs.)',
-                hint: 'e.g. 42000',
-                keyboardType: TextInputType.number,
-              ),
-            ),
-          ],
+        AppTextField(controller: _quantityController, label: 'Quantity', keyboardType: TextInputType.number),
+        const SizedBox(height: AppSpacing.md),
+        _priceFields(costHint: 'e.g. 35000', saleHint: 'e.g. 40000'),
+      ],
+    );
+  }
+
+  /// Cost Price (what the shop paid) and Sale Price (what's charged at the
+  /// counter) side by side — every phone shop margin lives in the gap
+  /// between the two, so both are tracked from the moment stock comes in.
+  Widget _priceFields({required String costHint, required String saleHint}) {
+    return Row(
+      children: [
+        Expanded(
+          child: AppTextField(
+            controller: _costPriceController,
+            label: 'Cost Price (Rs.)',
+            hint: costHint,
+            keyboardType: TextInputType.number,
+          ),
+        ),
+        const SizedBox(width: AppSpacing.md),
+        Expanded(
+          child: AppTextField(
+            controller: _salePriceController,
+            label: 'Sale Price (Rs.)',
+            hint: saleHint,
+            keyboardType: TextInputType.number,
+          ),
         ),
       ],
+    );
+  }
+
+  /// Model field for the iPhone tab: search the standard model list, or
+  /// pick "Custom / Not Listed…" to clear the field and type anything —
+  /// matches Android's already-free-text Model field for the cases a
+  /// standard iPhone name doesn't fit (an old model, a regional variant).
+  Widget _iphoneModelField() {
+    return Autocomplete<String>(
+      initialValue: TextEditingValue(text: _modelController.text),
+      optionsBuilder: (textEditingValue) {
+        final query = textEditingValue.text.toLowerCase();
+        final matches = standardIphoneModels.where((m) => m.toLowerCase().contains(query));
+        return [...matches, _customModelSentinel];
+      },
+      onSelected: (selection) {
+        if (selection == _customModelSentinel) {
+          _modelController.clear();
+        } else {
+          _modelController.text = selection;
+        }
+      },
+      fieldViewBuilder: (context, controller, focusNode, onFieldSubmitted) {
+        // Autocomplete manages its own controller (passing textEditingController
+        // directly requires a matching focusNode too, which fieldViewBuilder
+        // doesn't give us) — so mirror it into _modelController instead,
+        // guarded to attach the listener only once per controller instance.
+        if (_autocompleteModelController != controller) {
+          _autocompleteModelController = controller;
+          controller.addListener(() {
+            if (_modelController.text != controller.text) _modelController.text = controller.text;
+          });
+        }
+        return TextField(
+          controller: controller,
+          focusNode: focusNode,
+          decoration: const InputDecoration(labelText: 'Model', hintText: 'Search or type a model'),
+        );
+      },
+      optionsViewBuilder: (context, onSelected, options) {
+        return Align(
+          alignment: Alignment.topLeft,
+          child: Material(
+            elevation: 4,
+            borderRadius: BorderRadius.circular(AppRadius.md),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxHeight: 220, maxWidth: 380),
+              child: ListView(
+                padding: EdgeInsets.zero,
+                shrinkWrap: true,
+                children: [
+                  for (final option in options)
+                    ListTile(
+                      dense: true,
+                      title: Text(
+                        option,
+                        style: option == _customModelSentinel
+                            ? AppTypography.bodyMd.copyWith(color: AppColors.primary, fontWeight: FontWeight.w700)
+                            : AppTypography.bodyMd,
+                      ),
+                      onTap: () => onSelected(option),
+                    ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 
