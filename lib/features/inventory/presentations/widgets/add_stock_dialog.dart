@@ -142,7 +142,7 @@ class _AddStockDialogState extends State<AddStockDialog> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Add Stock', style: AppTypography.headlineMd),
+              const Text('Add Stock', style: AppTypography.headlineMd),
               const SizedBox(height: AppSpacing.xs),
               const Text(
                 'For the demo this just adds a sample row — real intake comes once the database is wired up.',

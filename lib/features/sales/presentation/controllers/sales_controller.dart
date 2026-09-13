@@ -68,7 +68,7 @@ class SalesController extends GetxController {
   }
 
   void onNewSaleTapped() {
-    Get.dialog(NewSaleDialog());
+    Get.dialog(const NewSaleDialog());
   }
 
   /// Demo-only: appends a sale to the sample list, bumps the stat cards to
