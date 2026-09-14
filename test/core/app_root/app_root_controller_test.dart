@@ -55,7 +55,14 @@ void main() {
     await pumpApp(tester);
     db = await AppDatabase.openInMemoryForTest();
     final authService = SqliteAuthService(databaseProvider: () async => db);
-    await authService.createFirstOwner(name: 'Ahmed', pin: '1234');
+    // createFirstOwner does a real write through sqflite_common_ffi's native
+    // worker — every other test file that calls a write like this wraps it
+    // in runAsync so the await actually resolves under the fake clock
+    // testWidgets normally runs on. This one test was missing that wrapper,
+    // which is exactly why it hung instead of the others.
+    await tester.runAsync(() async {
+      await authService.createFirstOwner(name: 'Ahmed', pin: '1234');
+    });
     Get.put(authService, permanent: true);
     Get.put(SessionService(), permanent: true);
 
