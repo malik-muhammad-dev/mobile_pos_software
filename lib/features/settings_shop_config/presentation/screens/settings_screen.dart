@@ -24,53 +24,64 @@ class SettingsScreen extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: AppColors.canvas,
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(AppSpacing.gutterLg),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text('Settings', style: AppTypography.headlineLg),
-            const SizedBox(height: AppSpacing.xs),
-            const Text('Shop details, your PIN, and backups.', style: AppTypography.bodyMd),
-            const SizedBox(height: AppSpacing.lg),
-            const ShopProfileCard(),
-            const SizedBox(height: AppSpacing.gutter),
-            Obx(() {
-              final staff = session.currentStaff.value;
-              return AppCard(
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text('My Account', style: AppTypography.headlineMd),
-                          const SizedBox(height: AppSpacing.xs),
-                          Text(staff?.name ?? '—', style: AppTypography.bodyLg),
-                          const SizedBox(height: 2),
-                          const Text('Owner', style: AppTypography.bodySm),
-                        ],
+      body: Obx(() {
+        // Gates ShopProfileCard's construction on the real load finishing —
+        // it seeds its text fields once, from whatever shopName/address
+        // hold the moment it's first built, so building it before
+        // SettingsController's async _load() completes would seed it with
+        // blank values instead of the real saved shop config.
+        if (controller.isLoading.value) {
+          return const Center(child: CircularProgressIndicator());
+        }
+
+        return SingleChildScrollView(
+          padding: const EdgeInsets.all(AppSpacing.gutterLg),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text('Settings', style: AppTypography.headlineLg),
+              const SizedBox(height: AppSpacing.xs),
+              const Text('Shop details, your PIN, and backups.', style: AppTypography.bodyMd),
+              const SizedBox(height: AppSpacing.lg),
+              const ShopProfileCard(),
+              const SizedBox(height: AppSpacing.gutter),
+              Obx(() {
+                final staff = session.currentStaff.value;
+                return AppCard(
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text('My Account', style: AppTypography.headlineMd),
+                            const SizedBox(height: AppSpacing.xs),
+                            Text(staff?.name ?? '—', style: AppTypography.bodyLg),
+                            const SizedBox(height: 2),
+                            const Text('Owner', style: AppTypography.bodySm),
+                          ],
+                        ),
                       ),
-                    ),
-                    SizedBox(
-                      width: 140,
-                      child: AppButton(
-                        label: 'Change PIN',
-                        variant: AppButtonVariant.secondary,
-                        icon: Icons.lock_outline,
-                        onPressed: () => Get.dialog(const ChangePinDialog()),
+                      SizedBox(
+                        width: 140,
+                        child: AppButton(
+                          label: 'Change PIN',
+                          variant: AppButtonVariant.secondary,
+                          icon: Icons.lock_outline,
+                          onPressed: () => Get.dialog(const ChangePinDialog()),
+                        ),
                       ),
-                    ),
-                  ],
-                ),
-              );
-            }),
-            const SizedBox(height: AppSpacing.gutter),
-            BackupRestoreCard(controller: controller),
-          ],
-        ),
-      ),
+                    ],
+                  ),
+                );
+              }),
+              const SizedBox(height: AppSpacing.gutter),
+              BackupRestoreCard(controller: controller),
+            ],
+          ),
+        );
+      }),
     );
   }
 }

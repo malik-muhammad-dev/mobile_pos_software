@@ -39,7 +39,7 @@ class _ShopProfileCardState extends State<ShopProfileCard> {
     super.dispose();
   }
 
-  void _save() {
+  Future<void> _save() async {
     if (_nameController.text.trim().isEmpty) {
       setState(() => _error = 'Shop name is required');
       return;
@@ -51,12 +51,14 @@ class _ShopProfileCardState extends State<ShopProfileCard> {
     }
 
     setState(() => _error = null);
-    _controller.saveShopProfile(
+    // The success snackbar lives in the controller (only fires once the
+    // real save actually succeeds); a failure surfaces its own message via
+    // safeSubmit, so nothing else to show here either way.
+    await _controller.saveShopProfile(
       name: _nameController.text.trim(),
       shopAddress: _addressController.text.trim(),
       threshold: threshold,
     );
-    Get.snackbar('Saved', 'Shop profile updated.', snackPosition: SnackPosition.BOTTOM);
   }
 
   @override

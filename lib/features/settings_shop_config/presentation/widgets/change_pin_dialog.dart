@@ -2,16 +2,19 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../../../../core/services/auth_service.dart';
+import '../../../../core/services/session_service.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/theme/app_typography.dart';
+import '../../../../core/utils/app_exceptions.dart';
+import '../../../../core/utils/safe_submit.dart';
 import '../../../../core/widgets/app_button.dart';
 import '../../../auth/presentation/widgets/pin_dots_input.dart';
 
-/// Change the logged-in owner's PIN. Demo-grade for now — validates the
-/// three fields client-side (new/confirm match, all 4 digits) but doesn't
-/// touch the real pin_hash yet; there's no real "current PIN" to check
-/// against until AuthService is wired to the real staff table.
+/// Change the logged-in owner's PIN — wired to the real SqliteAuthService:
+/// current PIN is checked with the same login() staff/PIN verification the
+/// login screen uses, then resetPin() writes the new pin_hash for real.
 class ChangePinDialog extends StatefulWidget {
   const ChangePinDialog({super.key});
 
@@ -33,7 +36,7 @@ class _ChangePinDialogState extends State<ChangePinDialog> {
     super.dispose();
   }
 
-  void _submit() {
+  Future<void> _submit() async {
     if (_currentController.text.length != 4) {
       setState(() => _error = 'Enter your current PIN');
       return;
@@ -42,17 +45,31 @@ class _ChangePinDialogState extends State<ChangePinDialog> {
       setState(() => _error = 'New PIN must be 4 digits');
       return;
     }
-    if (_newController.text != _confirmController.text) {
-      setState(() => _error = "New PIN and confirmation don't match");
+
+    final staffId = Get.find<SessionService>().currentStaff.value?.id;
+    if (staffId == null) {
+      setState(() => _error = "Session expired — please log back in.");
       return;
     }
 
-    Get.back();
-    Get.snackbar(
-      'PIN updated',
-      "For the demo this isn't saved yet — real PIN storage comes with the AuthService wiring.",
-      snackPosition: SnackPosition.BOTTOM,
-    );
+    setState(() => _error = null);
+    final authService = Get.find<SqliteAuthService>();
+
+    final ok = await safeSubmit(() async {
+      // Reuses the exact same PIN check the login screen makes — wrong
+      // current PIN throws InvalidPinException, same message either place.
+      await authService.login(staffId: staffId, pin: _currentController.text);
+      if (_newController.text != _confirmController.text) {
+        throw const PinMismatchException();
+      }
+      await authService.resetPin(staffId, _newController.text);
+      return true;
+    });
+
+    if (ok == true) {
+      Get.back();
+      Get.snackbar('PIN updated', 'Your PIN has been changed.', snackPosition: SnackPosition.BOTTOM);
+    }
   }
 
   @override

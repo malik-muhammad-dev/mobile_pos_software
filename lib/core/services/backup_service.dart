@@ -68,4 +68,12 @@ class BackupService {
     if (rows.isEmpty) return null;
     return BackupRecord.fromRow(rows.first);
   }
+
+  /// Same query as lastBackup, just more rows — feeds Settings' backup
+  /// history list.
+  Future<List<BackupRecord>> recentBackups({int limit = 5}) async {
+    final db = await _databaseProvider();
+    final rows = await db.query('backups_log', orderBy: 'created_at DESC', limit: limit);
+    return rows.map(BackupRecord.fromRow).toList();
+  }
 }

@@ -1,67 +1,68 @@
 import 'package:get/get.dart';
+import '../../../../core/services/backup_service.dart';
+import '../../../../core/services/shop_config_service.dart';
+import '../../../../core/utils/safe_submit.dart';
 
-/// Mirrors backups_log.type — 'auto' runs in the background on its own
-/// schedule, 'manual' is triggered by Backup Now.
-enum BackupType { auto, manual }
-
-extension BackupTypeX on BackupType {
-  String get label => this == BackupType.auto ? 'Automatic' : 'Manual';
-}
-
-class SampleBackupEntry {
-  const SampleBackupEntry({required this.dateTime, required this.type, required this.sizeBytes});
-
-  final DateTime dateTime;
-  final BackupType type;
-  final int sizeBytes;
-}
-
-/// Settings screen state (Owner-only). Placeholder-only, per the UI-first
-/// build order — shop profile fields and the backup list are sample data
-/// so the screen can be reviewed before it's wired to the real shop_config
-/// / backups_log tables. No staff-management screen here on purpose — cut
-/// from this build's scope; "My Account" only covers the logged-in
-/// owner's own PIN, not a staff list.
+/// Settings screen state (Owner-only). Unlike most of this app's other
+/// screens, this one is wired to the real data layer already — Setup
+/// Wizard writes shop_config for real on first run via
+/// SqliteShopConfigService, and BackupService already copies the real .db
+/// file and logs it — so there was no reason to sit this behind sample
+/// data too. No staff-management here on purpose (cut from this build's
+/// scope); "My Account" only covers the logged-in owner's own PIN.
 class SettingsController extends GetxController {
-  final RxString shopName = 'Al-Karam Mobiles'.obs;
-  final RxString address = 'Commercial Market, Mianwali'.obs;
+  final SqliteShopConfigService _shopConfigService = Get.find<SqliteShopConfigService>();
+  final BackupService _backupService = Get.find<BackupService>();
+
+  final RxBool isLoading = true.obs;
+
+  final RxString shopName = ''.obs;
+  final RxString address = ''.obs;
   final RxInt lowStockThreshold = 3.obs;
 
-  final RxList<SampleBackupEntry> backups = <SampleBackupEntry>[].obs;
+  final RxList<BackupRecord> backups = <BackupRecord>[].obs;
 
   @override
   void onInit() {
     super.onInit();
-    _loadSampleData();
+    _load();
   }
 
-  void _loadSampleData() {
-    final now = DateTime.now();
-    backups.assignAll([
-      SampleBackupEntry(dateTime: now.subtract(const Duration(hours: 6)), type: BackupType.auto, sizeBytes: 482000),
-      SampleBackupEntry(dateTime: now.subtract(const Duration(days: 1, hours: 6)), type: BackupType.auto, sizeBytes: 478000),
-      SampleBackupEntry(dateTime: now.subtract(const Duration(days: 2, hours: 6)), type: BackupType.auto, sizeBytes: 471000),
-      SampleBackupEntry(dateTime: now.subtract(const Duration(days: 3)), type: BackupType.manual, sizeBytes: 465000),
-    ]);
+  Future<void> _load() async {
+    isLoading.value = true;
+    final config = await _shopConfigService.getConfig();
+    if (config != null) {
+      shopName.value = config.shopName;
+      address.value = config.address ?? '';
+      lowStockThreshold.value = config.lowStockThreshold;
+    }
+    backups.assignAll(await _backupService.recentBackups());
+    isLoading.value = false;
   }
 
-  DateTime? get lastBackupAt => backups.isEmpty ? null : backups.first.dateTime;
+  BackupRecord? get lastBackup => backups.isEmpty ? null : backups.first;
 
-  /// Demo-only: appends a sample row. No real file is written yet — exists
-  /// so Backup Now can be shown working before the real backup job (and
-  /// backups_log write) is wired in.
-  void backupNow() {
-    backups.insert(
-      0,
-      SampleBackupEntry(dateTime: DateTime.now(), type: BackupType.manual, sizeBytes: 483000 + backups.length * 400),
-    );
+  Future<void> backupNow() async {
+    final record = await safeSubmit(() => _backupService.runBackup(manual: true));
+    if (record != null) {
+      backups.insert(0, record);
+    }
   }
 
-  /// Demo-only: updates the in-memory sample values and nothing else yet —
-  /// no real shop_config row to write to until the database is wired up.
-  void saveShopProfile({required String name, required String shopAddress, required int threshold}) {
-    shopName.value = name;
-    address.value = shopAddress;
-    lowStockThreshold.value = threshold;
+  Future<void> saveShopProfile({required String name, required String shopAddress, required int threshold}) async {
+    final saved = await safeSubmit(() async {
+      await _shopConfigService.saveConfig(
+        shopName: name,
+        address: shopAddress.isEmpty ? null : shopAddress,
+        lowStockThreshold: threshold,
+      );
+      return true;
+    });
+    if (saved == true) {
+      shopName.value = name;
+      address.value = shopAddress;
+      lowStockThreshold.value = threshold;
+      Get.snackbar('Saved', 'Shop profile updated.', snackPosition: SnackPosition.BOTTOM);
+    }
   }
 }

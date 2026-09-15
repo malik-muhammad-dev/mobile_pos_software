@@ -6,6 +6,7 @@ import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../../core/widgets/app_button.dart';
 import '../../../../core/widgets/app_card.dart';
+import '../../../../core/services/backup_service.dart';
 import '../controllers/settings_controller.dart';
 
 /// Last-backup summary, a Backup Now button, and recent backup history.
@@ -25,7 +26,7 @@ class BackupRestoreCard extends StatelessWidget {
     // never actually touches `controller.backups`, so nothing would
     // register as a dependency and Backup Now wouldn't refresh this card.
     return Obx(() {
-      final lastBackupAt = controller.lastBackupAt;
+      final lastBackupAt = controller.lastBackup?.createdAt;
       final recentBackups = controller.backups.take(5).toList();
 
       return AppCard(
@@ -72,19 +73,20 @@ class BackupRestoreCard extends StatelessWidget {
     });
   }
 
-  Widget _backupRow(SampleBackupEntry backup) {
+  Widget _backupRow(BackupRecord backup) {
+    final isAuto = backup.type == 'auto';
     return Row(
       children: [
         Icon(
-          backup.type == BackupType.auto ? Icons.schedule_outlined : Icons.touch_app_outlined,
+          isAuto ? Icons.schedule_outlined : Icons.touch_app_outlined,
           size: 16,
           color: AppColors.textMuted,
         ),
         const SizedBox(width: AppSpacing.sm),
         Expanded(
-          child: Text(DateFormat('MMM d, yyyy — h:mm a').format(backup.dateTime), style: AppTypography.bodyMd),
+          child: Text(DateFormat('MMM d, yyyy — h:mm a').format(backup.createdAt), style: AppTypography.bodyMd),
         ),
-        Text(backup.type.label, style: AppTypography.bodySm),
+        Text(isAuto ? 'Automatic' : 'Manual', style: AppTypography.bodySm),
         const SizedBox(width: AppSpacing.md),
         SizedBox(
           width: 64,
