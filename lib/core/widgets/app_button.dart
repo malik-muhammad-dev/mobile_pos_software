@@ -30,7 +30,10 @@ class AppButton extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         if (icon != null) ...[Icon(icon, size: 20), const SizedBox(width: 8)],
-        Text(label),
+        // Flexible + ellipsis so a button squeezed narrow (e.g. two
+        // side-by-side Expanded buttons in a dialog) shrinks its label
+        // instead of overflowing — same fix as StatusBadge.
+        Flexible(child: Text(label, overflow: TextOverflow.ellipsis, maxLines: 1)),
       ],
     );
 

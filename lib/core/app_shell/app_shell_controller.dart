@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:mobile_shop_pos/features/inventory/presentations/screens/inventory_screen.dart';
 import '../services/session_service.dart';
 import '../services/staff_model.dart';
 import '../widgets/coming_soon_screen.dart';
+import '../../features/customers_ledger/presentation/screens/customers_list_screen.dart';
+import '../../features/inventory/presentations/screens/inventory_screen.dart';
 import '../../features/sales/presentation/screens/sales_screen.dart';
 import 'nav_item.dart';
 
@@ -41,7 +42,7 @@ class AppShellController extends GetxController {
       label: 'Customers & Ledger',
       icon: Icons.menu_book_outlined,
       roles: {StaffRole.owner, StaffRole.cashier},
-      builder: (_) => const ComingSoonScreen(title: 'Customers & Ledger'),
+      builder: (_) => const CustomersListScreen(),
     ),
     NavItem(
       id: 'reports',
