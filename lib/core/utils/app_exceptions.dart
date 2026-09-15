@@ -44,3 +44,22 @@ class InvalidImeiException extends AppException {
 class PinMismatchException extends AppException {
   const PinMismatchException() : super("Those PINs don't match — let's try again.");
 }
+
+class EmailAlreadyRegisteredException extends AppException {
+  const EmailAlreadyRegisteredException()
+      : super('An account already exists for that email — try "Existing Shop" instead.');
+}
+
+class InvalidShopCredentialsException extends AppException {
+  const InvalidShopCredentialsException() : super("That email or password doesn't match our records.");
+}
+
+class NoInternetException extends AppException {
+  const NoInternetException()
+      : super("Couldn't reach the server — check your internet connection and try again.");
+}
+
+class PhoneAlreadyRegisteredException extends AppException {
+  const PhoneAlreadyRegisteredException()
+      : super('A shop is already registered with that phone number.');
+}

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../../features/subscription/presentation/widgets/subscription_banner.dart';
 import '../services/session_service.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
@@ -24,22 +25,29 @@ class AppShell extends StatelessWidget {
     final items = controller.itemsFor(staff.role);
 
     return Scaffold(
-      body: Obx(() {
-        final selected = controller.selectedIndex.value.clamp(0, items.length - 1);
-        return Row(
-          children: [
-            _NavRail(
-              items: items,
-              selectedIndex: selected,
-              onSelect: controller.select,
-              staffName: staff.name,
-              onLogOut: controller.logOut,
-            ),
-            const VerticalDivider(width: 1, color: AppColors.borderDefault),
-            Expanded(child: items[selected].builder(context)),
-          ],
-        );
-      }),
+      body: Column(
+        children: [
+          const SubscriptionBanner(),
+          Expanded(
+            child: Obx(() {
+              final selected = controller.selectedIndex.value.clamp(0, items.length - 1);
+              return Row(
+                children: [
+                  _NavRail(
+                    items: items,
+                    selectedIndex: selected,
+                    onSelect: controller.select,
+                    staffName: staff.name,
+                    onLogOut: controller.logOut,
+                  ),
+                  const VerticalDivider(width: 1, color: AppColors.borderDefault),
+                  Expanded(child: items[selected].builder(context)),
+                ],
+              );
+            }),
+          ),
+        ],
+      ),
     );
   }
 }

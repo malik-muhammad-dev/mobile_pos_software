@@ -2,6 +2,7 @@ import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'migrations/migration_v1.dart';
+import 'migrations/migration_v2.dart';
 
 /// Owns the single on-disk SQLite database. Every Sqlite*Service/Repository
 /// takes an optional `databaseProvider` override (see the testability note
@@ -10,7 +11,7 @@ import 'migrations/migration_v1.dart';
 class AppDatabase {
   AppDatabase._();
 
-  static const int schemaVersion = 1;
+  static const int schemaVersion = 2;
   static Database? _instance;
 
   static Future<Database> getDatabase() async {
@@ -21,10 +22,12 @@ class AppDatabase {
       dbPath,
       options: OpenDatabaseOptions(
         version: schemaVersion,
-        onCreate: (db, version) async => createV1Schema(db),
+        onCreate: (db, version) async {
+          await createV1Schema(db);
+          await createV2Migration(db);
+        },
         onUpgrade: (db, oldVersion, newVersion) async {
-          // Future migrations branch here, e.g.:
-          // if (oldVersion < 2) { await createV2Migration(db); }
+          if (oldVersion < 2) await createV2Migration(db);
         },
       ),
     );
@@ -37,7 +40,10 @@ class AppDatabase {
       inMemoryDatabasePath,
       options: OpenDatabaseOptions(
         version: schemaVersion,
-        onCreate: (db, version) async => createV1Schema(db),
+        onCreate: (db, version) async {
+          await createV1Schema(db);
+          await createV2Migration(db);
+        },
       ),
     );
   }
