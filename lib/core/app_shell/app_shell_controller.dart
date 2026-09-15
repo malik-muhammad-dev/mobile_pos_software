@@ -5,6 +5,7 @@ import '../services/staff_model.dart';
 import '../widgets/coming_soon_screen.dart';
 import '../../features/customers_ledger/presentation/screens/customers_list_screen.dart';
 import '../../features/inventory/presentations/screens/inventory_screen.dart';
+import '../../features/reports/presentation/screens/reports_screen.dart';
 import '../../features/sales/presentation/screens/sales_screen.dart';
 import 'nav_item.dart';
 
@@ -49,7 +50,7 @@ class AppShellController extends GetxController {
       label: 'Reports',
       icon: Icons.insights_outlined,
       roles: {StaffRole.owner},
-      builder: (_) => const ComingSoonScreen(title: 'Reports'),
+      builder: (_) => const ReportsScreen(),
     ),
     NavItem(
       id: 'settings',

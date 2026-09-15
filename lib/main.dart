@@ -8,6 +8,7 @@ import 'core/widgets/crash_fallback_screen.dart';
 import 'features/auth/presentation/bindings/auth_binding.dart';
 import 'features/customers_ledger/presentation/bindings/customers_ledger_binding.dart';
 import 'features/inventory/presentations/bindings/inventory_binding.dart';
+import 'features/reports/presentation/bindings/reports_binding.dart';
 import 'features/sales/presentation/bindings/sales_binding.dart';
 
 void main() {
@@ -35,6 +36,7 @@ class MobileShopPosApp extends StatelessWidget {
         SalesBinding().dependencies();
         InventoryBinding().dependencies();
         CustomersLedgerBinding().dependencies();
+        ReportsBinding().dependencies();
       }),
       home: const AppRoot(),
     );
