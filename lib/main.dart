@@ -10,6 +10,7 @@ import 'features/customers_ledger/presentation/bindings/customers_ledger_binding
 import 'features/inventory/presentations/bindings/inventory_binding.dart';
 import 'features/reports/presentation/bindings/reports_binding.dart';
 import 'features/sales/presentation/bindings/sales_binding.dart';
+import 'features/settings_shop_config/presentation/bindings/settings_binding.dart';
 
 void main() {
   sqfliteFfiInit();
@@ -37,6 +38,7 @@ class MobileShopPosApp extends StatelessWidget {
         InventoryBinding().dependencies();
         CustomersLedgerBinding().dependencies();
         ReportsBinding().dependencies();
+        SettingsBinding().dependencies();
       }),
       home: const AppRoot(),
     );

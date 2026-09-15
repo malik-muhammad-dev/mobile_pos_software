@@ -7,6 +7,7 @@ import '../../features/customers_ledger/presentation/screens/customers_list_scre
 import '../../features/inventory/presentations/screens/inventory_screen.dart';
 import '../../features/reports/presentation/screens/reports_screen.dart';
 import '../../features/sales/presentation/screens/sales_screen.dart';
+import '../../features/settings_shop_config/presentation/screens/settings_screen.dart';
 import 'nav_item.dart';
 
 /// Defines the 5-module nav (Sales, Inventory, Customers & Ledger, Reports,
@@ -57,7 +58,7 @@ class AppShellController extends GetxController {
       label: 'Settings',
       icon: Icons.settings_outlined,
       roles: {StaffRole.owner},
-      builder: (_) => const ComingSoonScreen(title: 'Settings'),
+      builder: (_) => const SettingsScreen(),
     ),
   ];
 
